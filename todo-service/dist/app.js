@@ -108,33 +108,12 @@ class TodoManager {
     // 加载任务
     async loadTodos() {
         try {
-            // 根据当前过滤器设置参数
-            let priority = null;
-            let status = null;
-
-            switch (this.currentFilter) {
-                case 'high':
-                    priority = 'high';
-                    break;
-                case 'medium':
-                    priority = 'medium';
-                    break;
-                case 'low':
-                    priority = 'low';
-                    break;
-                case 'active':
-                    status = 1; // 未完成
-                    break;
-                case 'completed':
-                    status = 2; // 已完成
-                    break;
-            }
-
+            // 始终获取所有任务，然后在前端进行筛选
             const response = await TodoApiService.getTodos(
                 this.currentPage,
                 this.pageSize,
-                priority,
-                status
+                null,
+                null
             );
 
             // 转换后端数据格式为前端使用的格式
@@ -200,15 +179,23 @@ class TodoManager {
                 completed: !todo.completed
             };
 
-            await TodoApiService.updateTodo(id, updates);
-            // 更新本地数据
+            // 先更新本地UI，提升用户体验
             this.todos = this.todos.map(t =>
                 t.id === id ? { ...t, completed: !t.completed } : t
             );
             this.renderTodos();
             this.updateStats();
+
+            // 再更新后端数据
+            await TodoApiService.updateTodo(id, updates);
         } catch (error) {
             console.error('Failed to toggle todo:', error);
+            // 回滚UI状态
+            this.todos = this.todos.map(t =>
+                t.id === id ? { ...t, completed: !t.completed } : t
+            );
+            this.renderTodos();
+            this.updateStats();
             alert('更新任务状态失败，请重试');
         }
     }
@@ -324,20 +311,21 @@ class TodoManager {
             const priorityClass = this.getPriorityClass(todo.priority);
             const priorityBadge = this.getPriorityBadge(todo.priority);
             const completedClass = todo.completed ? 'line-through text-gray-400' : '';
-            const checkboxClass = todo.completed ? 'bg-primary text-white' : 'border-gray-300';
+            const checkboxClass = todo.completed ? 'bg-green-500 text-white' : 'border-gray-300 hover:border-primary';
 
             return `
                 <div class="todo-item p-4 flex items-center gap-3 ${priorityClass} border-l-4 border-l-${todo.priority === 'high' ? 'red' : todo.priority === 'medium' ? 'yellow' : 'green'}-400 hover:bg-gray-50 transition-colors"
                      data-id="${todo.id}">
-                    <button class="toggle-btn flex-shrink-0 w-5 h-5 rounded-full ${checkboxClass} border flex items-center justify-center transition-colors"
+                    <button class="toggle-btn flex-shrink-0 w-6 h-6 rounded-full ${checkboxClass} border-2 flex items-center justify-center transition-all duration-300"
                             aria-label="${todo.completed ? '标记为未完成' : '标记为已完成'}">
-                        ${todo.completed ? '<i class="fa fa-check text-xs"></i>' : ''}
+                        ${todo.completed ? '<i class="fa fa-check text-sm"></i>' : ''}
                     </button>
                     <div class="flex-grow min-w-0">
                         <p class="text-sm ${completedClass} break-words">${todo.text}</p>
                         <div class="flex items-center mt-1 gap-2 text-xs text-gray-500">
                             ${priorityBadge}
                             <span>${new Date(todo.createdAt).toLocaleDateString()}</span>
+                            ${todo.completed ? '<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-medium">已完成</span>' : ''}
                         </div>
                     </div>
                     <button class="delete-btn text-gray-400 hover:text-red-500 transition-colors p-1"
@@ -357,20 +345,25 @@ class TodoManager {
 
     // 添加事件监听器
     addEventListeners() {
+        // 使用事件委托方式绑定事件
+        const todoList = document.getElementById('todo-list');
+        
         // 切换任务状态
-        document.querySelectorAll('.toggle-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const id = parseInt(btn.closest('.todo-item').dataset.id);
+        todoList.addEventListener('click', (e) => {
+            if (e.target.closest('.toggle-btn')) {
+                const btn = e.target.closest('.toggle-btn');
+                const id = btn.closest('.todo-item').dataset.id;
                 this.toggleTodo(id);
-            });
+            }
         });
-
+        
         // 删除任务
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const id = parseInt(btn.closest('.todo-item').dataset.id);
+        todoList.addEventListener('click', (e) => {
+            if (e.target.closest('.delete-btn')) {
+                const btn = e.target.closest('.delete-btn');
+                const id = btn.closest('.todo-item').dataset.id;
                 this.deleteTodo(id);
-            });
+            }
         });
     }
 
