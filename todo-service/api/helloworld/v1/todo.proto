@@ -2,9 +2,9 @@ syntax = "proto3";
 
 package helloworld.v1;
 
-import public "google/api/annotations.proto"; // NOLINT
+import "google/api/annotations.proto"; // NOLINT
 import "google/protobuf/empty.proto";
-import public "validate/validate.proto"; // NOLINT
+import "validate/validate.proto"; // NOLINT
 
 option go_package = "todo-service/api/helloworld/v1;v1";
 option java_multiple_files = true;

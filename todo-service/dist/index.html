@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List 应用</title>
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        // 配置Tailwind自定义颜色
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981',
+                        accent: '#F59E0B',
+                        dark: '#1F2937',
+                        light: '#F9FAFB'
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .todo-item-shadow {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .glass-effect {
+                backdrop-filter: blur(8px);
+                background-color: rgba(255, 255, 255, 0.7);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-light to-gray-100 min-h-screen font-sans text-dark p-4 md:p-8 flex flex-col items-center">
+    <div class="container max-w-2xl w-full bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
+        <!-- 头部 -->
+        <header class="bg-primary text-white p-6 md:p-8 rounded-t-xl">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <h1 class="text-[clamp(1.8rem,5vw,2.5rem)] font-bold tracking-tight flex items-center gap-2">
+                    <i class="fa fa-check-square-o" aria-hidden="true"></i>
+                    <span>To-Do List</span>
+                </h1>
+                <div class="flex gap-2">
+                    <button id="theme-toggle" class="bg-white/20 hover:bg-white/30 transition-colors p-2 rounded-full">
+                        <i class="fa fa-moon-o" aria-hidden="true"></i>
+                    </button>
+                    <button id="stats-btn" class="bg-white/20 hover:bg-white/30 transition-colors p-2 rounded-full">
+                        <i class="fa fa-bar-chart" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+            <p class="text-white/80 mt-2">管理你的任务，提高工作效率</p>
+        </header>
+
+        <!-- 添加任务表单 -->
+        <div class="p-6 border-b border-gray-100">
+            <form id="add-todo-form" class="flex flex-col sm:flex-row gap-3">
+                <input
+                    type="text"
+                    id="todo-input"
+                    placeholder="添加新任务..."
+                    class="flex-grow px-4 py-3 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                    required
+                >
+                <div class="flex gap-3 w-full sm:w-auto">
+                    <select
+                        id="priority-select"
+                        class="px-3 py-3 rounded-lg border border-gray-200 bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                    >
+                        <option value="low">低优先级</option>
+                        <option value="medium" selected>中优先级</option>
+                        <option value="high">高优先级</option>
+                    </select>
+                    <button
+                        type="submit"
+                        class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg transition-all font-medium flex items-center justify-center gap-2"
+                    >
+                        <i class="fa fa-plus" aria-hidden="true"></i>
+                        <span>添加</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 任务过滤器 -->
+        <div class="p-4 flex flex-wrap gap-2 bg-gray-50 border-b border-gray-100 overflow-x-auto scrollbar-hide">
+            <button class="filter-btn active px-4 py-2 rounded-full text-sm font-medium bg-primary text-white whitespace-nowrap" data-filter="all">
+                全部任务
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-200 hover:bg-gray-300 whitespace-nowrap" data-filter="active">
+                未完成
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-200 hover:bg-gray-300 whitespace-nowrap" data-filter="completed">
+                已完成
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-200 hover:bg-gray-300 whitespace-nowrap" data-filter="high">
+                高优先级
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-200 hover:bg-gray-300 whitespace-nowrap" data-filter="medium">
+                中优先级
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-200 hover:bg-gray-300 whitespace-nowrap" data-filter="low">
+                低优先级
+            </button>
+        </div>
+
+        <!-- 任务列表 -->
+        <div id="todo-list" class="divide-y divide-gray-100 max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+            <!-- 任务项将通过JavaScript动态添加 -->
+            <div class="p-8 text-center text-gray-400"><i class="fa fa-tasks text-5xl mb-3 opacity-30"></i><p>暂无任务，添加一个新任务开始吧！</p></div>
+        </div>
+
+        <!-- 底部统计 -->
+        <footer class="p-4 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-3 bg-gray-50 rounded-b-xl">
+            <div class="text-sm text-gray-500">
+                <span id="task-count">0</span> 个任务
+            </div>
+            <button id="clear-completed" class="text-sm text-gray-500 hover:text-red-500 transition-colors px-3 py-1 rounded-full bg-white/50 hover:bg-red-50">
+                清除已完成
+            </button>
+        </footer>
+    </div>
+
+    <!-- 统计模态框 -->
+    <div id="stats-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4 transform translate-y-8 transition-transform duration-300">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-dark">任务统计</h3>
+                <button id="close-stats" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fa fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <span class="text-gray-600">总任务数</span>
+                    <span id="total-tasks" class="text-lg font-semibold">0</span>
+                </div>
+                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <span class="text-gray-600">已完成</span>
+                    <span id="completed-tasks" class="text-lg font-semibold text-green-500">0</span>
+                </div>
+                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <span class="text-gray-600">未完成</span>
+                    <span id="active-tasks" class="text-lg font-semibold text-red-500">0</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3 mt-4">
+                    <div id="completion-progress" class="bg-secondary h-3 rounded-full" style="width: 0%"></div>
+                </div>
+                <p class="text-sm text-gray-500 mt-2 text-center">完成率: <span id="completion-rate">0%</span></p>
+            </div>
+            <div class="mt-6 grid grid-cols-3 gap-3 text-center">
+                <div class="p-3 bg-blue-50 rounded-lg text-blue-600">
+                    <div class="font-bold text-lg" id="high-priority-count">0</div>
+                    <div class="text-xs">高优先级</div>
+                </div>
+                <div class="p-3 bg-yellow-50 rounded-lg text-yellow-600">
+                    <div class="font-bold text-lg" id="medium-priority-count">0</div>
+                    <div class="text-xs">中优先级</div>
+                </div>
+                <div class="p-3 bg-green-50 rounded-lg text-green-600">
+                    <div class="font-bold text-lg" id="low-priority-count">0</div>
+                    <div class="text-xs">低优先级</div>
+                </div>
+            </div>
+            <button id="close-stats-btn" class="w-full mt-6 bg-primary hover:bg-primary/90 text-white py-3 rounded-lg transition-colors">
+                关闭
+            </button>
+        </div>
+    </div>
+
+    <script src="./app.js"></script>
+</body>
+</html>

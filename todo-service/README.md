@@ -42,22 +42,3 @@ cd scripts
 
 > Note: The default database configuration is root:123456@tcp(127.0.0.1:3306). You can modify the database connection string in configs/config.yaml if needed.
 
-## Automated Initialization (wire)
-```
-# install wire
-go get github.com/google/wire/cmd/wire
-
-# generate wire
-cd cmd/server
-wire
-```
-
-## Docker
-```bash
-# build
-docker build -t <your-docker-image-name> .
-
-# run
-docker run --rm -p 8000:8000 -p 9000:9000 -v </path/to/your/configs>:/data/conf <your-docker-image-name>
-```
-
