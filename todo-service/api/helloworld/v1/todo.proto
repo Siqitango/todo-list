@@ -1,0 +1,120 @@
+syntax = "proto3";
+
+package helloworld.v1;
+
+import public "google/api/annotations.proto"; // NOLINT
+import "google/protobuf/empty.proto";
+import public "validate/validate.proto"; // NOLINT
+
+option go_package = "todo-service/api/helloworld/v1;v1";
+option java_multiple_files = true;
+option java_package = "dev.kratos.api.helloworld.v1";
+option java_outer_classname = "TodoProtoV1";
+
+// The todo service definition.
+service TodoService {
+  // Create a new todo
+  rpc CreateTodo (CreateTodoRequest) returns (Todo) {
+    option (google.api.http) = {
+      post: "/api/todo"
+      body: "*"
+    };
+  }
+  
+  // Get a todo by id
+  rpc GetTodo (GetTodoRequest) returns (Todo) {
+    option (google.api.http) = {
+      get: "/api/todo/{id}"
+    };
+  }
+  
+  // Update a todo
+  rpc UpdateTodo (UpdateTodoRequest) returns (Todo) {
+    option (google.api.http) = {
+      put: "/api/todo/{id}"
+      body: "*"
+    };
+  }
+  
+  // Delete a todo
+  rpc DeleteTodo (DeleteTodoRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/api/todo/{id}"
+    };
+  }
+  
+  // List todos
+  rpc ListTodos (ListTodosRequest) returns (ListTodosResponse) {
+    option (google.api.http) = {
+      get: "/api/todos"
+    };
+  }
+}
+
+// Todo priority
+enum Priority {
+  PRIORITY_UNSPECIFIED = 0;
+  PRIORITY_LOW = 1;
+  PRIORITY_MEDIUM = 2;
+  PRIORITY_HIGH = 3;
+}
+
+// Todo status
+enum Status {
+  STATUS_UNSPECIFIED = 0;
+  STATUS_PENDING = 1;
+  STATUS_COMPLETED = 2;
+}
+
+// Todo message
+message Todo {
+  int64 id = 1;
+  string title = 2;
+  string description = 3;
+  Priority priority = 4;
+  Status status = 5;
+  string created_at = 6;
+  string updated_at = 7;
+}
+
+// Create todo request
+message CreateTodoRequest {
+  string title = 1 [(validate.rules).string.min_len = 1];
+  string description = 2;
+  Priority priority = 3;
+}
+
+// Get todo request
+message GetTodoRequest {
+  int64 id = 1 [(validate.rules).int64.gt = 0];
+}
+
+// Update todo request
+message UpdateTodoRequest {
+  int64 id = 1 [(validate.rules).int64.gt = 0];
+  string title = 2;
+  string description = 3;
+  Priority priority = 4;
+  Status status = 5;
+}
+
+// Delete todo request
+message DeleteTodoRequest {
+  int64 id = 1 [(validate.rules).int64.gt = 0];
+}
+
+// List todos request
+message ListTodosRequest {
+  int32 page = 1 [(validate.rules).int32.gte = 1];
+  int32 page_size = 2 [(validate.rules).int32.gte = 1, (validate.rules).int32.lte = 100];
+  Priority priority = 3;
+  Status status = 4;
+}
+
+// List todos response
+message ListTodosResponse {
+  repeated Todo todos = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}

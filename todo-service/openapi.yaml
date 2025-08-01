@@ -1,0 +1,215 @@
+# Generated with protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: ""
+    version: 0.0.1
+paths:
+    /api/todo:
+        post:
+            tags:
+                - TodoService
+            description: Create a new todo
+            operationId: TodoService_CreateTodo
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/helloworld.v1.CreateTodoRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/helloworld.v1.Todo'
+    /api/todo/{id}:
+        get:
+            tags:
+                - TodoService
+            description: Get a todo by id
+            operationId: TodoService_GetTodo
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/helloworld.v1.Todo'
+        put:
+            tags:
+                - TodoService
+            description: Update a todo
+            operationId: TodoService_UpdateTodo
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/helloworld.v1.UpdateTodoRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/helloworld.v1.Todo'
+        delete:
+            tags:
+                - TodoService
+            description: Delete a todo
+            operationId: TodoService_DeleteTodo
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /api/todos:
+        get:
+            tags:
+                - TodoService
+            description: List todos
+            operationId: TodoService_ListTodos
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: priority
+                  in: query
+                  schema:
+                    type: integer
+                    format: enum
+                - name: status
+                  in: query
+                  schema:
+                    type: integer
+                    format: enum
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/helloworld.v1.ListTodosResponse'
+    /helloworld/{name}:
+        get:
+            tags:
+                - Greeter
+            description: Sends a greeting
+            operationId: Greeter_SayHello
+            parameters:
+                - name: name
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/helloworld.v1.HelloReply'
+components:
+    schemas:
+        helloworld.v1.CreateTodoRequest:
+            type: object
+            properties:
+                title:
+                    type: string
+                description:
+                    type: string
+                priority:
+                    type: integer
+                    format: enum
+            description: Create todo request
+        helloworld.v1.HelloReply:
+            type: object
+            properties:
+                message:
+                    type: string
+            description: The response message containing the greetings
+        helloworld.v1.ListTodosResponse:
+            type: object
+            properties:
+                todos:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/helloworld.v1.Todo'
+                total:
+                    type: integer
+                    format: int32
+                page:
+                    type: integer
+                    format: int32
+                pageSize:
+                    type: integer
+                    format: int32
+            description: List todos response
+        helloworld.v1.Todo:
+            type: object
+            properties:
+                id:
+                    type: string
+                title:
+                    type: string
+                description:
+                    type: string
+                priority:
+                    type: integer
+                    format: enum
+                status:
+                    type: integer
+                    format: enum
+                createdAt:
+                    type: string
+                updatedAt:
+                    type: string
+            description: Todo message
+        helloworld.v1.UpdateTodoRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                title:
+                    type: string
+                description:
+                    type: string
+                priority:
+                    type: integer
+                    format: enum
+                status:
+                    type: integer
+                    format: enum
+            description: Update todo request
+tags:
+    - name: Greeter
+      description: The greeting service definition.
+    - name: TodoService
+      description: The todo service definition.
